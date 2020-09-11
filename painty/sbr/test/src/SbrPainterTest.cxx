@@ -13,6 +13,7 @@
 #include "gtest/gtest.h"
 #include "painty/mixer/Serialization.hxx"
 #include "painty/renderer/Renderer.hxx"
+#include "painty/sbr/PictureTargetSbrPainter.hxx"
 #include "painty/sbr/SbrPainter.hxx"
 
 TEST(SbrPainterTest, Construct) {
@@ -37,4 +38,11 @@ TEST(SbrPainterTest, Construct) {
   painty::Renderer<painty::vec3> renderer;
   painty::io::imSave("/tmp/canvasComposed.png", renderer.compose(*canvasPtr),
                      true);
+
+  painty::PictureTargetSbrPainter picturePainter(canvasPtr, palette);
+
+  painty::Mat3d image;
+  painty::io::imRead("./data/test_images/field.jpg", image, false);
+
+  picturePainter.paintImage(image);
 }

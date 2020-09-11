@@ -47,7 +47,7 @@ inline T CatmullRom(const T& p_1, const T& p0, const T& p1, const T& p2,
 }
 
 template <class T>
-inline T CatmullRomFirstDerivative(const T& p_1, const T& p0, const T& p1,
+inline T CatmullRomDerivativeFirst(const T& p_1, const T& p0, const T& p1,
                                    const T& p2,
                                    typename DataType<T>::channel_type t) {
   using Float = typename DataType<T>::channel_type;
@@ -187,6 +187,15 @@ class SplineEval {
     return CatmullRom(getIndexClamped(index - 1), getIndexClamped(index),
                       getIndexClamped(index + 1), getIndexClamped(index + 2),
                       t);
+  }
+
+  value_type catmullRomDerivativeFirst(value u) {
+    int32_t index = 0;
+    value t;
+    getControl(u, index, t);
+    return CatmullRomDerivativeFirst(
+      getIndexClamped(index - 1), getIndexClamped(index),
+      getIndexClamped(index + 1), getIndexClamped(index + 2), t);
   }
 
  private:

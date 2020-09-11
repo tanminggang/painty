@@ -12,8 +12,8 @@
 namespace painty {
 
 SbrPainter::SbrPainter(const std::shared_ptr<Canvas<vec3>>& canvasPtr,
-                       const Palette& palette)
-    : _mixer(palette),
+                       const Palette& basePigmentsPalette)
+    : _mixer(basePigmentsPalette),
       _canvasPtr(canvasPtr),
       _brush(0.0) {}
 
@@ -23,6 +23,10 @@ void SbrPainter::setBrushRadius(const double radius) {
 
 void SbrPainter::dipBrush(const std::array<vec3, 2UL>& paint) {
   _brush.dip(paint);
+}
+
+auto SbrPainter::getMixer() const -> const PaintMixer& {
+  return _mixer;
 }
 
 void SbrPainter::paintStroke(const std::vector<vec2>& path) {
@@ -81,7 +85,7 @@ void SbrPainter::paintStroke(const std::vector<vec2>& path) {
       const auto t = static_cast<double>(pd) / dist;
 
       const auto dir =
-        painty::CatmullRomFirstDerivative(p_pre, p_0, p_1, p_next, t);
+        painty::CatmullRomDerivativeFirst(p_pre, p_0, p_1, p_next, t);
       _brush.imprint(painty::CatmullRom(p_pre, p_0, p_1, p_next, t),
                      std::atan2(dir[1U], dir[0U]), *_canvasPtr);
     }

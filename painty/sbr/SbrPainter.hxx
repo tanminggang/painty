@@ -13,16 +13,18 @@
 #include "painty/renderer/FootprintBrush.hxx"
 
 namespace painty {
-class SbrPainter final {
+class SbrPainter {
  public:
   SbrPainter(const std::shared_ptr<Canvas<vec3>>& canvasPtr,
-             const Palette& palette);
+             const Palette& basePigmentsPalette);
 
   void setBrushRadius(const double radius);
 
   void paintStroke(const std::vector<vec2>& path);
 
   void dipBrush(const std::array<vec3, 2UL>& paint);
+
+  auto getMixer() const -> const PaintMixer&;
 
  private:
   SbrPainter() = delete;
