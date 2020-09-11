@@ -51,14 +51,15 @@ auto PathTracer::trace(const vec2& seed) -> std::vector<vec2> {
   auto growB = true;
 
   // push first point
-  if (((forward.w + backward.w) >= _minLen) &&
+  if ((((forward.w + backward.w) / _step) >= _minLen) &&
       (_evaluatePositionFun(seed) != NextAction::PATH_CONTINUE)) {
     growF = growB = false;
   } else {
     pathDeq.push_back(seed);
+    forward.w += _step;
   }
 
-  while ((forward.w + backward.w) < _maxLen && (growF || growB)) {
+  while (((forward.w + backward.w) / _step) < _maxLen && (growF || growB)) {
     // grow forwards
     if (growF) {
       if (stepNext(forward) && insideFrame(forward.p)) {
@@ -83,7 +84,7 @@ auto PathTracer::trace(const vec2& seed) -> std::vector<vec2> {
     // grow backwards
     if (growB) {
       if (stepNext(backward) && insideFrame(backward.p)) {
-        const auto st = _evaluatePositionFun(forward.p);
+        const auto st = _evaluatePositionFun(backward.p);
         if (st == NextAction::PATH_STOP_NOW) {
           growF = false;
         } else {

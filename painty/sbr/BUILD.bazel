@@ -8,7 +8,9 @@ painty_cc_library(
     deps = [
         "//painty/core:painty_core",
         "//painty/image:painty_image",
-        "//painty/io:painty_io"
+        "//painty/io:painty_io",
+        "//painty/mixer:painty_mixer",
+        "//painty/renderer:painty_renderer"
     ],
 )
 
