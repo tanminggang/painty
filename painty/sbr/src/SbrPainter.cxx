@@ -9,13 +9,64 @@
 
 namespace painty {
 
-SbrPainter::SbrPainter(const Canvas<vec3>& canvas, const Palette& palette)
+SbrPainter::SbrPainter(const std::shared_ptr<Canvas<vec3>>& canvasPtr,
+                       const Palette& palette)
     : _mixer(palette),
-      _canvas(canvas),
+      _canvasPtr(canvasPtr),
       _brush(0.0) {}
 
 void SbrPainter::setBrushRadius(const double radius) {
   _brush.setRadius(radius);
+}
+
+void SbrPainter::dipBrush(const std::array<vec3, 2UL>& paint) {
+  _brush.dip(paint);
+}
+
+void SbrPainter::paintStroke(const std::vector<vec2>& path) {
+  /**
+    * @author Zingl Alois
+    * @date 22.08.2016
+    * @version 1.2
+    */
+  const auto bresenham = [](vec2i p0, vec2i p1) -> std::vector<vec2i> {
+    std::vector<vec2i> points;
+    int32_t dx = std::abs(p1[0U] - p0[0U]), sx = p0[0U] < p1[0U] ? 1 : -1;
+    int32_t dy = -std::abs(p1[1U] - p0[1U]), sy = p0[1U] < p1[1U] ? 1 : -1;
+    int32_t err = dx + dy, e2;
+
+    for (;;) {
+      vec2i p = p0;
+      if (points.empty() || (points.back() != p)) {
+        points.push_back(p);
+      }
+      if ((p0[0U] == p1[0U]) && (p0[1U] == p1[1U])) {
+        break;
+      }
+      e2 = 2 * err;
+      if (e2 >= dy) {
+        err += dy;
+        p0[0U] += sx;
+      }
+      if (e2 <= dx) {
+        err += dx;
+        p0[1U] += sy;
+      }
+    }
+    return points;
+  };
+
+  for (auto i = 1UL; (i < path.size()); i++) {
+    const auto p0 = path[i - 1UL].cast<int32_t>();
+    const auto p1 = path[i].cast<int32_t>();
+
+    const auto sampled_path = bresenham(p0, p1);
+
+    for (const auto& p : sampled_path) {
+      // TODO implement theta
+      _brush.imprint(p.cast<double>(), 0.0, *_canvasPtr);
+    }
+  }
 }
 
 }  // namespace painty

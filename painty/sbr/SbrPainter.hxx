@@ -15,16 +15,21 @@
 namespace painty {
 class SbrPainter final {
  public:
-  SbrPainter(const Canvas<vec3>& canvas, const Palette& palette);
+  SbrPainter(const std::shared_ptr<Canvas<vec3>>& canvasPtr,
+             const Palette& palette);
 
   void setBrushRadius(const double radius);
+
+  void paintStroke(const std::vector<vec2>& path);
+
+  void dipBrush(const std::array<vec3, 2UL>& paint);
 
  private:
   SbrPainter() = delete;
 
   PaintMixer _mixer;
 
-  Canvas<vec3> _canvas;
+  std::shared_ptr<Canvas<vec3>> _canvasPtr = nullptr;
 
   FootprintBrush<vec3> _brush;
 };
