@@ -79,9 +79,10 @@ void SbrPainter::paintStroke(const std::vector<vec2>& path) {
 
     for (int32_t pd = 1; pd <= static_cast<int32_t>(dist); pd++) {
       const auto t = static_cast<double>(pd) / dist;
-      // TODO implement theta
-      const auto dir = painty::CubicDerivativeFirst(p_pre, p_0, p_1, p_next, t);
-      _brush.imprint(painty::Cubic(p_pre, p_0, p_1, p_next, t),
+
+      const auto dir =
+        painty::CatmullRomFirstDerivative(p_pre, p_0, p_1, p_next, t);
+      _brush.imprint(painty::CatmullRom(p_pre, p_0, p_1, p_next, t),
                      std::atan2(dir[1U], dir[0U]), *_canvasPtr);
     }
   }
