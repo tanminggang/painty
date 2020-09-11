@@ -59,7 +59,7 @@ auto PathTracer::trace(const vec2& seed) -> std::vector<vec2> {
     forward.w += _step;
   }
 
-  while (((forward.w + backward.w) / _step) < _maxLen && (growF || growB)) {
+  while ((((forward.w + backward.w) / _step) < _maxLen) && (growF || growB)) {
     // grow forwards
     if (growF) {
       if (stepNext(forward) && insideFrame(forward.p)) {

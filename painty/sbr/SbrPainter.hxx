@@ -10,11 +10,14 @@
 #include "painty/mixer/PaintMixer.hxx"
 #include "painty/mixer/Palette.hxx"
 #include "painty/renderer/Canvas.hxx"
+#include "painty/renderer/FootprintBrush.hxx"
 
 namespace painty {
 class SbrPainter final {
  public:
   SbrPainter(const Canvas<vec3>& canvas, const Palette& palette);
+
+  void setBrushRadius(const double radius);
 
  private:
   SbrPainter() = delete;
@@ -22,5 +25,7 @@ class SbrPainter final {
   PaintMixer _mixer;
 
   Canvas<vec3> _canvas;
+
+  FootprintBrush<vec3> _brush;
 };
 }  // namespace painty

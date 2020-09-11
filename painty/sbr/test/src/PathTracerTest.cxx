@@ -20,11 +20,35 @@ TEST(PathTracerTest, Construct) {
   auto tracer = painty::PathTracer(tensors);
 
   tracer.setMinLen(3);
-  tracer.setMaxLen(14);
+  constexpr auto len = 15U;
+  tracer.setMaxLen(len);
   tracer.setStep(5);
   tracer.setFc(0.5);
 
+{
+  tracer.setStep(1);
   const auto path = tracer.trace({500.0, 500.0});
+  EXPECT_EQ(path.size(), len);
+}
 
-  EXPECT_EQ(path.size(), 14U);
+{
+  tracer.setStep(5);
+  const auto path = tracer.trace({500.0, 500.0});
+  EXPECT_EQ(path.size(), len);
+}
+
+{
+  tracer.setStep(5);
+  tracer.setFc(0.1);
+  const auto path = tracer.trace({500.0, 500.0});
+  EXPECT_EQ(path.size(), len);
+}
+
+{
+  tracer.setStep(5);
+  tracer.setFc(0.9);
+  const auto path = tracer.trace({500.0, 500.0});
+  EXPECT_EQ(path.size(), len);
+}
+
 }
