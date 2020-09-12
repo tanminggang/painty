@@ -18,12 +18,14 @@ target_link_libraries(${PROJECT_NAME}
   paintyCore
   paintyImage
   paintyMixer
+  paintyRenderer
 )
 
 add_dependencies(${PROJECT_NAME}
   paintyCore
   paintyImage
   paintyMixer
+  paintyRenderer
 )
 
 set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD 17)

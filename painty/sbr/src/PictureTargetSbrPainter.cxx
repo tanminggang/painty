@@ -14,8 +14,11 @@
 namespace painty {
 PictureTargetSbrPainter::PictureTargetSbrPainter(
   const std::shared_ptr<Canvas<vec3>>& canvasPtr,
-  const Palette& basePigmentsPalette)
-    : SbrPainter(canvasPtr, basePigmentsPalette) {}
+  const std::shared_ptr<PaintMixer>& basePigmentsMixerPtr,
+  const std::shared_ptr<SbrPainterBase>& painterPtr)
+    : _canvasPtr(canvasPtr),
+      _basePigmentsMixerPtr(basePigmentsMixerPtr),
+      _painterPtr(painterPtr) {}
 
 auto PictureTargetSbrPainter::paintImage(const Mat3d& srgbImage) -> bool {
   // convert to CIELab and blur the image using a bilateral filter
@@ -30,7 +33,8 @@ auto PictureTargetSbrPainter::paintImage(const Mat3d& srgbImage) -> bool {
     false);
 
   // mix palette for the image from the painters base pigments
-  const auto palette = getMixer().mixFromInputPicture(srgbImage, 6U);
+  const auto palette =
+    _basePigmentsMixerPtr->mixFromInputPicture(srgbImage, 6U);
   painty::io::imSave("/tmp/targetImagePalette.jpg",
                      VisualizePalette(palette, 1.0), false);
 
