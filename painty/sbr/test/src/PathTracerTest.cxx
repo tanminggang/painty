@@ -50,5 +50,4 @@ TEST(PathTracerTest, Construct) {
     const auto path = tracer.trace({500.0, 500.0});
     EXPECT_EQ(path.size(), len);
   }
-
 }
