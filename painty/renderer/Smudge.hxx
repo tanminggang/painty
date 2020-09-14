@@ -40,9 +40,9 @@ class Smudge final {
               T length, const Mat<T>& thicknessMap) {
     // rasterizing spline brute force, by step sampling the spline and using bresenham to connect the sample points
     std::vector<vec<int32_t, 2>> rasteredPoints;
-    for (double u = 0.0; u < 1.0; u += 1. / length) {
-      const auto p0 = spineSpline.cubic(u);
-      const auto p1 = spineSpline.cubic(u + 1. / length);
+    for (double u = 0.0; u <= 1.0; u += 1. / length) {
+      const auto p0 = spineSpline.catmullRom(u);
+      const auto p1 = spineSpline.catmullRom(u + 1. / length);
       bresenham(rasteredPoints, static_cast<int32_t>(p0[0]),
                 static_cast<int32_t>(p0[1]), static_cast<int32_t>(p1[0]),
                 static_cast<int32_t>(p1[1]));
@@ -63,24 +63,41 @@ class Smudge final {
       auto u    = static_cast<double>(i) /
                static_cast<double>(rasteredPoints.size() - 1U);
       // spine tangent vector
-      vec2 t = spineSpline.linearDerivative(u).normalized();
+      vec2 t = spineSpline.catmullRomDerivativeFirst(u).normalized();
       updateOrientation(t);
 
       auto radius = _maxSize * 0.5;
 
-      const auto roi_x = center[0] - _pickupMapDst.getCols() / 2.0;
-      const auto roi_y = center[1] - _pickupMapDst.getRows() / 2.0;
+      const int32_t roi_x =
+        static_cast<int32_t>(center[0] - _pickupMapDst.getCols() / 2.0);
+      const int32_t roi_y =
+        static_cast<int32_t>(center[1] - _pickupMapDst.getRows() / 2.0);
+      const int32_t cHeight = canvas.getPaintLayer().getV_buffer().rows;
+      const int32_t cWidth  = canvas.getPaintLayer().getV_buffer().cols;
+      const int32_t pHeight = _pickupMapDst.getRows();
+      const int32_t pWidth  = _pickupMapDst.getCols();
+      const int32_t yHeight = thicknessMap.rows;
+      const int32_t yWidth  = thicknessMap.cols;
 
       for (auto x = 0; x < _pickupMapDst.getCols(); x++) {
         for (auto y = 0; y < _pickupMapDst.getRows(); y++) {
-          if (x < 0 || x >= _pickupMapDst.getCols() || y < 0 ||
-              y >= _pickupMapDst.getRows()) {
+          vec<int32_t, 2> sp = {x, y};
+          vec<int32_t, 2> cp = {x + roi_x, y + roi_y};
+          vec<int32_t, 2> tp = {static_cast<int32_t>(cp[0] - boundMin[0U]),
+                                static_cast<int32_t>(cp[1] - boundMin[1U])};
+
+          if ((cp[0U] < 0) || (cp[1U] < 0) || (cp[0U] >= cWidth) ||
+              (cp[1U] >= cHeight)) {
             continue;
           }
-          vec<int32_t, 2> sp(x, y);
-          vec<int32_t, 2> cp(x + roi_x, y + roi_y);
-          vec<int32_t, 2> tp(static_cast<int32_t>(cp[0] - boundMin[0U]),
-                             static_cast<int32_t>(cp[1] - boundMin[1U]));
+          if ((sp[0U] < 0) || (sp[1U] < 0) || (sp[0U] >= pWidth) ||
+              (sp[1U] >= pHeight)) {
+            continue;
+          }
+          if ((tp[0U] < 0) || (tp[1U] < 0) || (tp[0U] >= yWidth) ||
+              (tp[1U] >= yHeight)) {
+            continue;
+          }
 
           const auto dist = (center - cp.cast<double>()).norm();
           if (dist > radius) {
@@ -164,12 +181,13 @@ class Smudge final {
     vec2 center = {_maxSize / 2.0, _maxSize / 2.0};
 
     // update pickupmap
-    for (auto x = 0; x < _maxSize; x++) {
-      for (auto y = 0; y < _maxSize; y++) {
+    for (auto x = 0; x < _pickupMapDst.getCols(); x++) {
+      for (auto y = 0; y < _pickupMapDst.getRows(); y++) {
         vec<int32_t, 2UL> destCoords(x, y);
         vec2 pickupPos = rotate(destCoords, dtheta, center);
-        if (pickupPos[0] < 0 || pickupPos[1] < 0 || pickupPos[0] >= _maxSize ||
-            pickupPos[1] >= _maxSize) {
+        if ((pickupPos[0] < 0) || (pickupPos[1] < 0) ||
+            (pickupPos[0] >= _pickupMapDst.getCols()) ||
+            (pickupPos[1] >= _pickupMapDst.getRows())) {
           _pickupMapDst.getK_buffer()(destCoords[1], destCoords[0]) =
             _pickupMapSrc.getK_buffer()(destCoords[1], destCoords[0]);
           _pickupMapDst.getS_buffer()(destCoords[1], destCoords[0]) =

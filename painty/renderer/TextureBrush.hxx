@@ -10,18 +10,16 @@
 #pragma once
 
 #include "painty/core/Spline.hxx"
+#include "painty/renderer/BrushBase.hxx"
 #include "painty/renderer/BrushStrokeSample.hxx"
 #include "painty/renderer/Canvas.hxx"
 #include "painty/renderer/Smudge.hxx"
 
 namespace painty {
 template <class vector_type>
-class TextureBrush final {
- private:
-  using T                 = typename DataType<vector_type>::channel_type;
-  static constexpr auto N = DataType<vector_type>::dim;
-
-  using KS = std::array<vector_type, 2UL>;
+class TextureBrush final : public BrushBase<vector_type> {
+  using T                 = typename BrushBase<vector_type>::T;
+  static constexpr auto N = BrushBase<vector_type>::N;
 
  public:
   TextureBrush(const std::string& sampleDir)
@@ -32,7 +30,7 @@ class TextureBrush final {
     }
   }
 
-  void setRadius(const double radius) {
+  void setRadius(const double radius) override {
     _radius = radius;
 
     _smudge = Smudge<vector_type>(static_cast<int32_t>(2.0 * radius));
@@ -43,11 +41,12 @@ class TextureBrush final {
    *
    * @param paint
    */
-  void dip(const KS& paint) {
+  void dip(const std::array<vector_type, 2UL>& paint) override {
     _paintStored = paint;
   }
 
-  void applyTo(const std::vector<vec2>& vertices, Canvas<vector_type>& canvas) {
+  void paintStroke(const std::vector<vec2>& vertices,
+                   Canvas<vector_type>& canvas) override {
     if (vertices.empty()) {
       return;
     }
@@ -198,7 +197,7 @@ class TextureBrush final {
    * @brief The current paint the brush stores.
    *
    */
-  KS _paintStored;
+  std::array<vector_type, 2UL> _paintStored;
 
   /**
    * @brief

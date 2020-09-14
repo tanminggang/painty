@@ -15,7 +15,7 @@ namespace painty {
 PictureTargetSbrPainter::PictureTargetSbrPainter(
   const std::shared_ptr<Canvas<vec3>>& canvasPtr,
   const std::shared_ptr<PaintMixer>& basePigmentsMixerPtr,
-  const std::shared_ptr<SbrPainterBase>& painterPtr)
+  const std::shared_ptr<BrushBase<vec3>>& painterPtr)
     : _canvasPtr(canvasPtr),
       _basePigmentsMixerPtr(basePigmentsMixerPtr),
       _painterPtr(painterPtr) {}

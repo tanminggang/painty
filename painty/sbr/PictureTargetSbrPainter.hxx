@@ -9,7 +9,9 @@
 
 #include <memory>
 
-#include "painty/sbr/SbrPainter.hxx"
+#include "painty/mixer/PaintMixer.hxx"
+#include "painty/renderer/BrushBase.hxx"
+#include "painty/renderer/Canvas.hxx"
 
 namespace painty {
 class PictureTargetSbrPainter {
@@ -17,7 +19,7 @@ class PictureTargetSbrPainter {
   PictureTargetSbrPainter(
     const std::shared_ptr<Canvas<vec3>>& canvasPtr,
     const std::shared_ptr<PaintMixer>& basePigmentsMixerPtr,
-    const std::shared_ptr<SbrPainterBase>& painterPtr);
+    const std::shared_ptr<BrushBase<vec3>>& painterPtr);
 
   auto paintImage(const Mat3d& labImage) -> bool;
 
@@ -26,6 +28,6 @@ class PictureTargetSbrPainter {
 
   std::shared_ptr<Canvas<vec3>> _canvasPtr          = nullptr;
   std::shared_ptr<PaintMixer> _basePigmentsMixerPtr = nullptr;
-  std::shared_ptr<SbrPainterBase> _painterPtr       = nullptr;
+  std::shared_ptr<BrushBase<vec3>> _painterPtr      = nullptr;
 };
 }  // namespace painty
