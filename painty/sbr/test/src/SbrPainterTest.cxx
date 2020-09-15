@@ -11,12 +11,12 @@
 #include <fstream>
 
 #include "gtest/gtest.h"
+#include "painty/io/ImageIO.hxx"
 #include "painty/mixer/Serialization.hxx"
+#include "painty/renderer/BrushBase.hxx"
 #include "painty/renderer/Renderer.hxx"
 #include "painty/renderer/TextureBrush.hxx"
-#include "painty/renderer/BrushBase.hxx"
 #include "painty/sbr/PictureTargetSbrPainter.hxx"
-#include "painty/io/ImageIO.hxx"
 
 TEST(SbrPainterTest, Construct) {
   painty::Palette palette = {};
