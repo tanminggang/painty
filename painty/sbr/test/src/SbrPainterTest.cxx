@@ -49,5 +49,7 @@ TEST(SbrPainterTest, Construct) {
   painty::Mat3d image;
   painty::io::imRead("./data/test_images/field.jpg", image, false);
 
-  picturePainter.paintImage(image);
+  picturePainter._paramsInput.inputSRGB = image;
+
+  picturePainter.paint();
 }
