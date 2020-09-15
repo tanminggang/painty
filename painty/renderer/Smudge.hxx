@@ -38,16 +38,6 @@ class Smudge final {
   void smudge(Canvas<vector_type>& canvas, const vec2& boundMin,
               SplineEval<std::vector<vec2>::const_iterator>& spineSpline,
               T length, const Mat<T>& thicknessMap) {
-    // rasterizing spline brute force, by step sampling the spline and using bresenham to connect the sample points
-    std::vector<vec<int32_t, 2>> rasteredPoints;
-    for (double u = 0.0; u <= 1.0; u += 1. / length) {
-      const auto p0 = spineSpline.catmullRom(u);
-      const auto p1 = spineSpline.catmullRom(u + 1. / length);
-      bresenham(rasteredPoints, static_cast<int32_t>(p0[0]),
-                static_cast<int32_t>(p0[1]), static_cast<int32_t>(p1[0]),
-                static_cast<int32_t>(p1[1]));
-    }
-
     auto maxD = 0.0;
     for (const auto& m : thicknessMap) {
       maxD = std::max(m, maxD);
@@ -56,17 +46,13 @@ class Smudge final {
       return;
     }
 
-    for (size_t i = 0; i < rasteredPoints.size(); ++i) {
-      vec2 center;
-      center[0] = rasteredPoints[i][0] + 0.5;
-      center[1] = rasteredPoints[i][1] + 0.5;
-      auto u    = static_cast<double>(i) /
-               static_cast<double>(rasteredPoints.size() - 1U);
+    for (double u = 0.0; u <= 1.0; u += 1. / length) {
+      const auto center = spineSpline.catmullRom(u);
       // spine tangent vector
       vec2 t = spineSpline.catmullRomDerivativeFirst(u).normalized();
       updateOrientation(t);
 
-      auto radius = _maxSize * 0.5;
+      const auto radius = _maxSize * 0.5;
 
       const int32_t roi_x =
         static_cast<int32_t>(center[0] - _pickupMapDst.getCols() / 2.0);
@@ -114,11 +100,11 @@ class Smudge final {
           const auto pV = _pickupMapDst.getV_buffer()(sp[1], sp[0]);
 
           // paint pickup from canvas
-          const auto cVl = cV * _ratePickup * D / maxD;
+          const auto cVl = cV * _depositionRate * D / maxD;
           const auto cVr = cV - cVl;
 
           // paint distributed to canvas
-          const auto pVl = pV * _rateRelease * D / maxD;
+          const auto pVl = pV * _pickupRate * D / maxD;
           const auto pVr = pV - pVl;
 
           const auto canvasK =
@@ -165,9 +151,9 @@ class Smudge final {
 
   T _currentRotation = 0.0;
 
-  T _rateRelease = 0.1;
+  T _pickupRate = 0.1;
 
-  T _ratePickup = 0.1;
+  T _depositionRate = 0.1;
 
   void updateOrientation(const vec2& heading) {
     const auto theta =
@@ -237,38 +223,6 @@ class Smudge final {
     p_[0] = xnew + center[0];
     p_[1] = ynew + center[1];
     return p_;
-  }
-
-  void bresenham(std::vector<vec<int32_t, 2UL>>& points, int32_t x0, int32_t y0,
-                 int32_t x1, int32_t y1) {
-    /**
-     * @author Zingl Alois
-     * @date 22.08.2016
-     * @version 1.2
-     */
-    int32_t dx = abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
-    int32_t dy = -abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
-    int32_t err = dx + dy, e2; /* error value e_xy */
-
-    for (;;) { /* loop */
-      vec<int32_t, 2UL> p;
-      p << x0, y0;
-      if (points.empty() || points.back() != vec<int32_t, 2UL>(p[0], p[1])) {
-        points.push_back(vec<int32_t, 2UL>(p[0], p[1]));
-      }
-      if (x0 == x1 && y0 == y1) {
-        break;
-      }
-      e2 = 2 * err;
-      if (e2 >= dy) {
-        err += dy;
-        x0 += sx;
-      } /* e_xy+e_x > 0 */
-      if (e2 <= dx) {
-        err += dx;
-        y0 += sy;
-      } /* e_xy+e_y < 0 */
-    }
   }
 };
 }  // namespace painty
